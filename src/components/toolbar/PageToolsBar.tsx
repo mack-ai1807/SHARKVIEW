@@ -11,15 +11,18 @@ import {
   compressPdf,
   unlockPdf,
   imagesToPdf,
+  addSignatureToPdf,
   downloadBytes,
   downloadImageBytes,
 } from "../../utils/pdfEdit";
+import { SignatureModal } from "../tools/SignatureModal";
 
 export function PageToolsBar() {
   const mergeInputRef = useRef<HTMLInputElement>(null);
   const [splitFrom, setSplitFrom] = useState("");
   const [splitTo, setSplitTo] = useState("");
   const [showSplit, setShowSplit] = useState(false);
+  const [showSignModal, setShowSignModal] = useState(false);
   const [busy, setBusy] = useState(false);
   const { loadFile } = usePdfDocument();
 
@@ -181,9 +184,26 @@ export function PageToolsBar() {
     }
   };
 
+  const handleSignApply = async (dataUrl: string) => {
+    if (!pdfBytes) return;
+    setShowSignModal(false);
+    setBusy(true);
+    try {
+      const updated = await addSignatureToPdf(pdfBytes, currentPage - 1, dataUrl);
+      await reloadFromBytes(updated);
+    } finally { setBusy(false); }
+  };
+
   const isImageTool = activeTool === "jpg-to-pdf" || activeTool === "png-to-pdf";
 
   return (
+    <>
+    {showSignModal && (
+      <SignatureModal
+        onApply={handleSignApply}
+        onClose={() => setShowSignModal(false)}
+      />
+    )}
     <div className="flex flex-wrap items-center gap-1 border-b border-gray-100 bg-gray-50 px-3 py-1.5 text-xs">
       {/* Rotate */}
       <button onClick={handleRotateCW} disabled={busy} className="tool-btn" title="Rotate CW">↻ CW</button>
@@ -273,7 +293,20 @@ export function PageToolsBar() {
         💾 Save PDF
       </button>
 
+      <div className="h-4 w-px bg-gray-300" />
+
+      {/* Sign */}
+      <button
+        onClick={() => setShowSignModal(true)}
+        disabled={busy || !pdfBytes}
+        className="tool-btn font-medium text-indigo-700 hover:bg-indigo-50"
+        title="Draw and embed signature on current page"
+      >
+        ✍️ Sign PDF
+      </button>
+
       {busy && <span className="ml-1 text-gray-400">Working…</span>}
     </div>
+    </>
   );
 }

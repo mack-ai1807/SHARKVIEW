@@ -86,6 +86,32 @@ export async function unlockPdf(pdfBytes: Uint8Array): Promise<Uint8Array> {
   return doc.save();
 }
 
+/** Embed a signature (PNG data URL) onto a page at the bottom-right area */
+export async function addSignatureToPdf(
+  pdfBytes: Uint8Array,
+  pageIndex: number, // 0-based
+  signatureDataUrl: string
+): Promise<Uint8Array> {
+  const doc = await PDFDocument.load(pdfBytes);
+  const page = doc.getPage(pageIndex);
+  const { width: pageW, height: pageH } = page.getSize();
+
+  // Strip data URL header and convert to bytes
+  const base64 = signatureDataUrl.replace(/^data:image\/png;base64,/, "");
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+  const img = await doc.embedPng(bytes);
+
+  // Place at bottom-right: 38% wide, proportional height, 5% margin from edges
+  const sigW = pageW * 0.38;
+  const sigH = (img.height / img.width) * sigW;
+  const x = pageW * 0.57;
+  const y = pageH * 0.05; // 5% up from bottom (pdf-lib origin = bottom-left)
+
+  page.drawImage(img, { x, y, width: sigW, height: sigH });
+  return doc.save();
+}
+
 /** Convert images to PDF. Each image becomes one page. */
 export async function imagesToPdf(files: File[]): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
