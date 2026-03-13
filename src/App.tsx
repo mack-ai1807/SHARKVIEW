@@ -1,26 +1,29 @@
 import { useEffect } from "react";
 import { useViewerStore } from "./store/viewerStore";
+import { ToolBar } from "./components/toolbar/ToolBar";
+import { PdfViewer } from "./components/viewer/PdfViewer";
 
 function App() {
-  const currentFileName = useViewerStore((s) => s.fileName);
+  const fileName = useViewerStore((s) => s.fileName);
 
   useEffect(() => {
-    document.title = currentFileName
-      ? `${currentFileName} — SHARKVIEW`
+    document.title = fileName
+      ? `${fileName} — SHARKVIEW`
       : "SHARKVIEW — Next Gen PDF Editor";
-  }, [currentFileName]);
+  }, [fileName]);
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-gray-100 text-gray-900">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2 shadow-sm">
-        <h1 className="text-xl font-bold tracking-tight">SHARKVIEW</h1>
-        {currentFileName && (
-          <span className="text-sm text-gray-500">{currentFileName}</span>
+    <div className="flex h-screen w-screen flex-col overflow-hidden text-gray-900">
+      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
+        <span className="text-sm font-bold tracking-widest text-gray-800">
+          SHARKVIEW
+        </span>
+        {fileName && (
+          <span className="text-xs text-gray-400">{fileName}</span>
         )}
       </header>
-      <main className="flex flex-1 items-center justify-center overflow-hidden">
-        <p className="text-gray-400">Open a PDF to get started.</p>
-      </main>
+      <ToolBar />
+      <PdfViewer />
     </div>
   );
 }
