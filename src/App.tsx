@@ -1,16 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useViewerStore } from "./store/viewerStore";
 import { ToolBar } from "./components/toolbar/ToolBar";
 import { PdfViewer } from "./components/viewer/PdfViewer";
 
 function App() {
   const fileName = useViewerStore((s) => s.fileName);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
     document.title = fileName
       ? `${fileName} — SHARKVIEW`
       : "SHARKVIEW — Next Gen PDF Editor";
   }, [fileName]);
+
+  const handleContainerWidth = useCallback((w: number) => {
+    setContainerWidth(w);
+  }, []);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden text-gray-900">
@@ -22,8 +27,8 @@ function App() {
           <span className="text-xs text-gray-400">{fileName}</span>
         )}
       </header>
-      <ToolBar />
-      <PdfViewer />
+      <ToolBar containerWidth={containerWidth} />
+      <PdfViewer onContainerWidth={handleContainerWidth} />
     </div>
   );
 }

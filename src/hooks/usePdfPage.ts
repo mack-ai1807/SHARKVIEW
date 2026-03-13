@@ -21,11 +21,17 @@ export function usePdfPage(
 
       const viewport = page.getViewport({ scale: zoom, rotation });
       const canvas = canvasRef.current;
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+
+      // Scale for device pixel ratio — fixes blurry text on Retina/HiDPI screens
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = `${viewport.width}px`;
+      canvas.style.height = `${viewport.height}px`;
 
       const ctx = canvas.getContext("2d");
       if (!ctx || cancelled) return;
+      ctx.scale(dpr, dpr);
 
       renderTask = page.render({ canvasContext: ctx, viewport });
       try {
