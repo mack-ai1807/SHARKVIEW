@@ -14,7 +14,7 @@
 - Vite: 8.x
 - Zustand: 5.x
 - PDF.js (pdfjs-dist): 5.x
-- Tailwind CSS: 4.x
+- Tailwind CSS: 4.x (uses `@tailwindcss/postcss` + `@import "tailwindcss"` in CSS)
 
 ## Folder Structure
 ```
@@ -75,11 +75,11 @@ Import: `import { useViewerStore } from "../store/viewerStore";`
 // Correct import (pdfjs-dist v5):
 import * as pdfjsLib from "pdfjs-dist";
 
-// Set worker source (do this once in main.tsx or a pdf util):
+// Set worker source (done once in src/main.tsx — do NOT repeat in components):
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.mjs",
+  "pdfjs-dist/build/pdf.worker.min.mjs",  // v5: use .min.mjs
   import.meta.url
-).toString();
+).href;
 
 // Load a PDF document:
 const loadingTask = pdfjsLib.getDocument({ url: filePath });
