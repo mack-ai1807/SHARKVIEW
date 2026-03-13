@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+@layer components {
+  .tool-btn {
+    @apply rounded px-2 py-1 text-xs text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40 transition-colors;
+  }
+}

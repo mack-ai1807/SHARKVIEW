@@ -3,7 +3,7 @@ import * as pdfjsLib from "pdfjs-dist";
 import { useViewerStore } from "../store/viewerStore";
 
 export function usePdfDocument() {
-  const { setFile, setPdfDocument, setLoading, setError, setZoom, reset } =
+  const { setFile, setPdfDocument, setPdfBytes, setLoading, setError, setZoom, reset } =
     useViewerStore();
 
   const loadFile = useCallback(
@@ -15,6 +15,7 @@ export function usePdfDocument() {
       try {
         const arrayBuffer = await file.arrayBuffer();
         const data = new Uint8Array(arrayBuffer);
+        setPdfBytes(data);
         const loadingTask = pdfjsLib.getDocument({ data });
         const pdf = await loadingTask.promise;
 
@@ -34,7 +35,7 @@ export function usePdfDocument() {
         setLoading(false);
       }
     },
-    [reset, setLoading, setFile, setPdfDocument, setZoom, setError]
+    [reset, setLoading, setFile, setPdfDocument, setPdfBytes, setZoom, setError]
   );
 
   return { loadFile };
