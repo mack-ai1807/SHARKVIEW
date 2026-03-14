@@ -2,7 +2,7 @@ import { PDFDocument, degrees } from "pdf-lib";
 
 /** Download a Uint8Array as a file */
 export function downloadBytes(bytes: Uint8Array, filename: string) {
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -13,7 +13,7 @@ export function downloadBytes(bytes: Uint8Array, filename: string) {
 
 /** Download image bytes */
 export function downloadImageBytes(bytes: Uint8Array, filename: string, mime: string) {
-  const blob = new Blob([bytes], { type: mime });
+  const blob = new Blob([new Uint8Array(bytes)], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import * as pdfjsLib from "pdfjs-dist";
 import { useViewerStore } from "../../store/viewerStore";
-import { usePdfDocument } from "../../hooks/usePdfDocument";
 import {
   rotatePage,
   deletePage,
@@ -13,7 +12,6 @@ import {
   imagesToPdf,
   addSignatureToPdf,
   downloadBytes,
-  downloadImageBytes,
 } from "../../utils/pdfEdit";
 import { SignatureModal } from "../tools/SignatureModal";
 
@@ -24,7 +22,6 @@ export function PageToolsBar() {
   const [showSplit, setShowSplit] = useState(false);
   const [showSignModal, setShowSignModal] = useState(false);
   const [busy, setBusy] = useState(false);
-  const { loadFile } = usePdfDocument();
 
   const {
     pdfBytes,
@@ -148,7 +145,7 @@ export function PageToolsBar() {
         canvas.width = vp.width;
         canvas.height = vp.height;
         const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        await page.render({ canvasContext: ctx, viewport: vp, canvas }).promise;
         const mimeType = format === "jpeg" ? "image/jpeg" : "image/png";
         const ext = format === "jpeg" ? "jpg" : "png";
         canvas.toBlob((blob) => {

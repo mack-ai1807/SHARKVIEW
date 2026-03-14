@@ -29,7 +29,7 @@ function PageThumb({
       canvas.height = vp.height;
       const ctx = canvas.getContext("2d");
       if (!ctx || cancelled) return;
-      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      await page.render({ canvasContext: ctx, viewport: vp, canvas }).promise;
       if (!cancelled) setRendered(true);
     };
     render().catch(console.error);

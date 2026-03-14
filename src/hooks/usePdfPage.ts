@@ -33,7 +33,7 @@ export function usePdfPage(
       if (!ctx || cancelled) return;
       ctx.scale(dpr, dpr);
 
-      renderTask = page.render({ canvasContext: ctx, viewport });
+      renderTask = page.render({ canvasContext: ctx, viewport, canvas });
       try {
         await renderTask.promise;
       } catch {
