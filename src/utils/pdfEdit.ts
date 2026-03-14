@@ -1,4 +1,5 @@
-import { PDFDocument, degrees, PDFTextField, PDFCheckBox, PDFDropdown, PDFRadioGroup } from "pdf-lib";
+import { PDFDocument, degrees, PDFTextField, PDFCheckBox, PDFDropdown, PDFRadioGroup, PDFName } from "pdf-lib";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 
 // ─── AcroForm helpers ────────────────────────────────────────────────────────
 
@@ -169,6 +170,59 @@ export async function addSignatureToPdf(
   const y = pageH * 0.05; // 5% up from bottom (pdf-lib origin = bottom-left)
 
   page.drawImage(img, { x, y, width: sigW, height: sigH });
+  return doc.save();
+}
+
+/**
+ * Compress Images — re-renders every page via pdfjs canvas at JPEG quality,
+ * then rebuilds a new PDF with those images. Significantly reduces file size
+ * for scanned or image-heavy documents.
+ */
+export async function compressImages(
+  pdfDoc: PDFDocumentProxy,
+  quality = 0.65
+): Promise<Uint8Array> {
+  const newDoc = await PDFDocument.create();
+
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const naturalVp = page.getViewport({ scale: 1 });
+    const renderVp = page.getViewport({ scale: 1.5 }); // render at 1.5× for crispness
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.floor(renderVp.width);
+    canvas.height = Math.floor(renderVp.height);
+    const ctx = canvas.getContext("2d")!;
+
+    await page.render({ canvasContext: ctx, viewport: renderVp, canvas }).promise;
+
+    const dataUrl = canvas.toDataURL("image/jpeg", quality);
+    const base64 = dataUrl.replace(/^data:image\/jpeg;base64,/, "");
+    const imgBytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+
+    const jpegImg = await newDoc.embedJpg(imgBytes);
+    const newPage = newDoc.addPage([naturalVp.width, naturalVp.height]);
+    newPage.drawImage(jpegImg, { x: 0, y: 0, width: naturalVp.width, height: naturalVp.height });
+  }
+
+  return newDoc.save();
+}
+
+/**
+ * Remove Watermark — heuristic removal:
+ * 1. Deletes all page annotation arrays (covers annotation-based watermarks)
+ * 2. Flattens AcroForm fields (removes form-overlay watermarks)
+ */
+export async function removeWatermark(pdfBytes: Uint8Array): Promise<Uint8Array> {
+  const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  for (const page of doc.getPages()) {
+    page.node.delete(PDFName.of("Annots"));
+  }
+  try {
+    doc.getForm().flatten();
+  } catch {
+    // No form fields — ignore
+  }
   return doc.save();
 }
 

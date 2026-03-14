@@ -55,6 +55,22 @@ const TOOL_SECTIONS: { section: string; tools: ToolCard[] }[] = [
         color: "bg-lime-50 border-lime-200",
         acceptFiles: ".pdf,application/pdf",
       },
+      {
+        id: "compress-images",
+        label: "Compress Images",
+        description: "Re-render pages as compressed JPEGs to shrink size",
+        icon: "🖼",
+        color: "bg-orange-50 border-orange-200",
+        acceptFiles: ".pdf,application/pdf",
+      },
+      {
+        id: "remove-watermark",
+        label: "Remove Watermark",
+        description: "Remove annotation & overlay watermarks from PDF",
+        icon: "🚿",
+        color: "bg-red-50 border-red-200",
+        acceptFiles: ".pdf,application/pdf",
+      },
     ],
   },
   {

@@ -5,6 +5,8 @@ export type AppMode = "hub" | "viewer";
 export type ToolId =
   | "view-pdf"
   | "compress-pdf"
+  | "compress-images"
+  | "remove-watermark"
   | "merge-pdf"
   | "split-pdf"
   | "rotate-pdf"
@@ -15,6 +17,8 @@ export type ToolId =
   | "sign-pdf"
   | "unlock-pdf"
   | "fill-pdf";
+
+export type SidebarTab = "pages" | "tools";
 
 interface ViewerState {
   // App mode
@@ -42,6 +46,7 @@ interface ViewerState {
   isLoading: boolean;
   error: string | null;
   sidebarOpen: boolean;
+  sidebarTab: SidebarTab;
 
   // Actions
   setFile: (path: string, name: string) => void;
@@ -53,6 +58,7 @@ interface ViewerState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   toggleSidebar: () => void;
+  setSidebarTab: (tab: SidebarTab) => void;
   reset: () => void;
 }
 
@@ -70,6 +76,7 @@ const initialState = {
   isLoading: false,
   error: null,
   sidebarOpen: true,
+  sidebarTab: "tools" as SidebarTab,
 };
 
 export const useViewerStore = create<ViewerState>((set) => ({
@@ -88,5 +95,6 @@ export const useViewerStore = create<ViewerState>((set) => ({
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarTab: (sidebarTab) => set({ sidebarTab }),
   reset: () => set(initialState),
 }));
