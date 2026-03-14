@@ -14,6 +14,7 @@ import {
   downloadBytes,
 } from "../../utils/pdfEdit";
 import { SignatureModal } from "../tools/SignatureModal";
+import { FillPdfPanel } from "../tools/FillPdfPanel";
 
 export function PageToolsBar() {
   const mergeInputRef = useRef<HTMLInputElement>(null);
@@ -21,6 +22,7 @@ export function PageToolsBar() {
   const [splitTo, setSplitTo] = useState("");
   const [showSplit, setShowSplit] = useState(false);
   const [showSignModal, setShowSignModal] = useState(false);
+  const [showFillPanel, setShowFillPanel] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const {
@@ -181,6 +183,14 @@ export function PageToolsBar() {
     }
   };
 
+  const handleFillApply = async (updatedBytes: Uint8Array) => {
+    setShowFillPanel(false);
+    setBusy(true);
+    try {
+      await reloadFromBytes(updatedBytes);
+    } finally { setBusy(false); }
+  };
+
   const handleSignApply = async (dataUrl: string) => {
     if (!pdfBytes) return;
     setShowSignModal(false);
@@ -199,6 +209,13 @@ export function PageToolsBar() {
       <SignatureModal
         onApply={handleSignApply}
         onClose={() => setShowSignModal(false)}
+      />
+    )}
+    {showFillPanel && pdfBytes && (
+      <FillPdfPanel
+        pdfBytes={pdfBytes}
+        onApply={handleFillApply}
+        onClose={() => setShowFillPanel(false)}
       />
     )}
     <div className="flex flex-wrap items-center gap-1 border-b border-gray-100 bg-gray-50 px-3 py-1.5 text-xs">
@@ -300,6 +317,16 @@ export function PageToolsBar() {
         title="Draw and embed signature on current page"
       >
         ✍️ Sign PDF
+      </button>
+
+      {/* Fill Form */}
+      <button
+        onClick={() => setShowFillPanel(true)}
+        disabled={busy || !pdfBytes}
+        className="tool-btn font-medium text-lime-700 hover:bg-lime-50"
+        title="Fill AcroForm fields in this PDF"
+      >
+        📝 Fill Form
       </button>
 
       {busy && <span className="ml-1 text-gray-400">Working…</span>}

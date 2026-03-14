@@ -47,6 +47,14 @@ const TOOL_SECTIONS: { section: string; tools: ToolCard[] }[] = [
         color: "bg-purple-50 border-purple-200",
         acceptFiles: ".pdf,application/pdf",
       },
+      {
+        id: "fill-pdf",
+        label: "Fill PDF",
+        description: "Type into form fields (AcroForms) in a PDF",
+        icon: "📝",
+        color: "bg-lime-50 border-lime-200",
+        acceptFiles: ".pdf,application/pdf",
+      },
     ],
   },
   {

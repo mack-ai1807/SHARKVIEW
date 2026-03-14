@@ -1,4 +1,64 @@
-import { PDFDocument, degrees } from "pdf-lib";
+import { PDFDocument, degrees, PDFTextField, PDFCheckBox, PDFDropdown, PDFRadioGroup } from "pdf-lib";
+
+// ─── AcroForm helpers ────────────────────────────────────────────────────────
+
+export type FormFieldType = "text" | "checkbox" | "dropdown" | "radio" | "other";
+
+export interface FormField {
+  name: string;
+  type: FormFieldType;
+  value: string | boolean;
+  options?: string[]; // for dropdown / radio
+}
+
+/** Extract all AcroForm fields and their current values from a PDF */
+export async function getPdfFormFields(pdfBytes: Uint8Array): Promise<FormField[]> {
+  const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  const form = doc.getForm();
+  return form.getFields().map((field) => {
+    const name = field.getName();
+    if (field instanceof PDFTextField) {
+      return { name, type: "text", value: field.getText() ?? "" };
+    }
+    if (field instanceof PDFCheckBox) {
+      return { name, type: "checkbox", value: field.isChecked() };
+    }
+    if (field instanceof PDFDropdown) {
+      const selected = field.getSelected();
+      return { name, type: "dropdown", value: selected[0] ?? "", options: field.getOptions() };
+    }
+    if (field instanceof PDFRadioGroup) {
+      return { name, type: "radio", value: field.getSelected() ?? "", options: field.getOptions() };
+    }
+    return { name, type: "other", value: "" };
+  });
+}
+
+/** Write filled values back into the PDF and return updated bytes */
+export async function fillPdfForm(
+  pdfBytes: Uint8Array,
+  values: Record<string, string | boolean>
+): Promise<Uint8Array> {
+  const doc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  const form = doc.getForm();
+  for (const field of form.getFields()) {
+    const name = field.getName();
+    const val = values[name];
+    if (val === undefined) continue;
+    if (field instanceof PDFTextField) {
+      field.setText(String(val));
+    } else if (field instanceof PDFCheckBox) {
+      val ? field.check() : field.uncheck();
+    } else if (field instanceof PDFDropdown) {
+      if (typeof val === "string" && val) field.select(val);
+    } else if (field instanceof PDFRadioGroup) {
+      if (typeof val === "string" && val) field.select(val);
+    }
+  }
+  return doc.save();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 /** Download a Uint8Array as a file */
 export function downloadBytes(bytes: Uint8Array, filename: string) {

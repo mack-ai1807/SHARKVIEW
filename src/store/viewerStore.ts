@@ -13,7 +13,8 @@ export type ToolId =
   | "jpg-to-pdf"
   | "png-to-pdf"
   | "sign-pdf"
-  | "unlock-pdf";
+  | "unlock-pdf"
+  | "fill-pdf";
 
 interface ViewerState {
   // App mode
